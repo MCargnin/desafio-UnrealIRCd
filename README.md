@@ -25,3 +25,124 @@ Você deverá editar esse Dockerfile para que ele fique válido e builde a image
 - [Cliente de IRC Linux] https://sempreupdate.com.br/como-instalar-o-irssi-um-cliente-irc-no-ubuntu-linux-mint-fedora-debian/
 - [Cliente de IRC Windows] https://www.tlscript.com.br/
 - [Dockerfile References] https://docs.docker.com/engine/reference/builder/
+
+# Solução
+
+## Servidor Cloudez
+
+Rodando o UnrealIRCd em uma cloud da Configr
+
+1) Crie uma conta e uma cloud Configr.
+2) Aguarde o provisionamento e faça o login na cloud com um usuário com privilégios sudo.
+3) Instale todas as dependências necessárias:
+
+```
+sudo apt-get install build-essential pkg-config gdb libssl-dev libpcre2-dev libargon2-0-dev libsodium-dev libc-ares-dev libcurl4-openssl-dev
+```
+
+4) Crie um novo usuário pelo painel da Configr sem privilégios e faça novo login via SSH. Em nosso caso, utilizaremos o usuário unrealircd.
+
+! Certifique-se de estar na raiz do usuário.
+
+5) Baixe o unrealIRCd e descompacte o pacote
+
+```
+mkdir tmp && cd tmp
+wget --trust-server-names https://www.unrealircd.org/downloads/unrealircd-latest.tar.gz
+cd unrealircd-6.1.4
+```
+
+6) Compilando
+
+```
+./Config
+```
+
+Obs.: Neste ponto podem ser utilizadas as configurações padrão apenas dando enter em todas as perguntas.
+
+```
+make
+make install
+```
+
+7) Ajuste as configurações. Suba o arquivo unrealircd.conf no diretório /home/unrealircd/unrealircd/conf
+
+```
+cd /home/unrealircd/unrealircd
+```
+
+8) Abra as portas do firewall
+
+```
+vim /etc/firewall.d/03_custom
+```
+
+```
+$IPTABLES -A INPUT -p tcp --dport 6667 -j ACCEPT
+$IP6TABLES -A INPUT -p tcp --dport 6667 -j ACCEPT
+
+$IPTABLES -A OUTPUT -p tcp --dport 6667 -j ACCEPT
+$IP6TABLES -A OUTPUT -p tcp --dport 6667 -j ACCEPT
+```
+
+```
+systemctl restart firewall
+```
+
+9) Inicie o unrealIRCd
+
+```
+cd /home/unrealircd/unrealircd
+./unrealircd start
+```
+
+## Servidor Docker
+
+1) Construa a imagem a partir do Dockerfile.
+```
+docker build -t irc-configr .
+```
+
+2) Rode a imagem expondo a porta 6667 para seu hospedeiro (tag para remover automaticamente a imagem após parar)
+```
+docker run -p 6667:6667 --rm irc-configr
+```
+
+3) Pare a imagem quando não precisar mais
+```
+docker stop irc-configr
+```
+
+## Instalando o client e conectando nos servidores
+
+1) Abra o terminal e instale o irssi
+
+```
+sudo apt-get install irssi
+```
+
+2) Execute o client
+
+```
+irssi
+```
+
+3) Adicione a rede Configr e após, adicione seu servidor
+
+```
+/network add configr
+/server add -network configr irc.confi.gr 6667
+```
+Obs.: Neste passo, devemos substituir o irc.confi.gr por nosso FQDN/IP.
+
+4) Conecte na rede
+
+```
+/connect configr
+```
+
+5) Acesse o canal
+
+```
+/join #configr
+```

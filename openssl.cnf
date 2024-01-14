@@ -1,0 +1,22 @@
+# openssl.cnf - Exemplo básico de configuração
+
+[req]
+default_bits       = 2048
+default_keyfile    = privkey.pem
+distinguished_name = req_distinguished_name
+#req_extensions     = req_ext
+#x509_extensions    = v3_ca
+
+[req_distinguished_name]
+countryName            = Country Name (2 letter code)
+countryName_default    = BR
+stateOrProvinceName    = State or Province Name (full name)
+stateOrProvinceName_default = DF
+localityName           = Locality Name (eg, city)
+localityName_default   = Brasilia
+organizationName       = Organization Name (eg, company)
+organizationName_default   = Configr
+commonName             = Common Name (e.g. server FQDN or YOUR name)
+commonName_default     = confi.gr
+emailAddress           = Email Address
+emailAddress_default   = marcos.cargnin@confi.gr
